@@ -1,0 +1,161 @@
+package com.vicvic.bobbieslighthouse.render;
+
+import com.vicvic.bobbieslighthouse.anchor.AnchorStore;
+import com.vicvic.bobbieslighthouse.anchor.LodestoneAnchor;
+import com.vicvic.bobbieslighthouse.bobby.BobbyBridge;
+import com.vicvic.bobbieslighthouse.config.LodestoneFarConfig;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.ChunkPos;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public final class AnchorRenderCoordinator {
+    private final Minecraft client;
+    private final LodestoneFarConfig config;
+    private final AnchorStore anchorStore;
+    private final BobbyBridge bobbyBridge;
+    private final Set<Long> managedChunks = new HashSet<>();
+    private final Set<Long> loadingChunks = new HashSet<>();
+    private int ticksUntilRefresh;
+
+    public AnchorRenderCoordinator(
+            Minecraft client,
+            LodestoneFarConfig config,
+            AnchorStore anchorStore,
+            BobbyBridge bobbyBridge
+    ) {
+        this.client = client;
+        this.config = config;
+        this.anchorStore = anchorStore;
+        this.bobbyBridge = bobbyBridge;
+    }
+
+    public void reset() {
+        for (long chunk : new HashSet<>(managedChunks)) {
+            bobbyBridge.unloadChunk(ChunkPos.getX(chunk), ChunkPos.getZ(chunk));
+        }
+        managedChunks.clear();
+        loadingChunks.clear();
+        ticksUntilRefresh = 0;
+    }
+
+    public void requestRefresh() {
+        ticksUntilRefresh = 0;
+    }
+
+    public int activeChunkCount() {
+        return managedChunks.size();
+    }
+
+    public boolean isBobbyAvailable() {
+        return bobbyBridge.isAvailable();
+    }
+
+    public void tick() {
+        if (!config.enabled || client.player == null || client.level == null) {
+            reset();
+            return;
+        }
+        if (--ticksUntilRefresh > 0) {
+            return;
+        }
+        ticksUntilRefresh = Math.max(1, config.renderRefreshIntervalTicks);
+        Set<Long> desired = computeDesiredChunks();
+        unloadUndesired(desired);
+        loadDesired(desired);
+    }
+
+    private Set<Long> computeDesiredChunks() {
+        Set<Long> desired = new HashSet<>();
+        ChunkPos playerChunk = client.player.chunkPosition();
+        int currentRenderDistance = client.options.renderDistance().get();
+        List<LodestoneAnchor> candidates = new ArrayList<>();
+        for (LodestoneAnchor anchor : anchorStore.all()) {
+            if (!anchor.enabled || !anchor.dimension.equals(anchorStore.dimensionKey())) {
+                continue;
+            }
+            int dx = anchor.chunkX - playerChunk.x;
+            int dz = anchor.chunkZ - playerChunk.z;
+            int distanceSquared = dx * dx + dz * dz;
+            if (distanceSquared <= config.maxAnchorDistanceChunks * config.maxAnchorDistanceChunks) {
+                candidates.add(anchor);
+            }
+        }
+        candidates.sort(Comparator.comparingInt(anchor -> {
+            int dx = anchor.chunkX - playerChunk.x;
+            int dz = anchor.chunkZ - playerChunk.z;
+            return dx * dx + dz * dz;
+        }));
+
+        int activeAnchors = 0;
+        for (LodestoneAnchor anchor : candidates) {
+            if (activeAnchors++ >= config.maxActiveAnchors || desired.size() >= config.maxExtraRenderedChunks) {
+                break;
+            }
+            addAnchorChunks(anchor, playerChunk, currentRenderDistance, desired);
+        }
+        return desired;
+    }
+
+    private void addAnchorChunks(LodestoneAnchor anchor, ChunkPos playerChunk, int currentRenderDistance, Set<Long> desired) {
+        int radius = Math.max(0, config.anchorRadiusChunks);
+        int radiusSquared = radius * radius;
+        for (int x = anchor.chunkX - radius; x <= anchor.chunkX + radius; x++) {
+            for (int z = anchor.chunkZ - radius; z <= anchor.chunkZ + radius; z++) {
+                int anchorDx = x - anchor.chunkX;
+                int anchorDz = z - anchor.chunkZ;
+                if (config.shape == LodestoneFarConfig.Shape.CIRCLE && anchorDx * anchorDx + anchorDz * anchorDz > radiusSquared) {
+                    continue;
+                }
+                int playerDx = Math.abs(x - playerChunk.x);
+                int playerDz = Math.abs(z - playerChunk.z);
+                if (playerDx <= currentRenderDistance && playerDz <= currentRenderDistance) {
+                    continue;
+                }
+                desired.add(ChunkPos.asLong(x, z));
+                if (desired.size() >= config.maxExtraRenderedChunks) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void unloadUndesired(Set<Long> desired) {
+        for (long chunk : new HashSet<>(managedChunks)) {
+            if (!desired.contains(chunk)) {
+                bobbyBridge.unloadChunk(ChunkPos.getX(chunk), ChunkPos.getZ(chunk));
+                managedChunks.remove(chunk);
+            }
+        }
+        loadingChunks.removeIf(chunk -> !desired.contains(chunk));
+    }
+
+    private void loadDesired(Set<Long> desired) {
+        int started = 0;
+        for (long chunk : desired) {
+            if (managedChunks.contains(chunk) || loadingChunks.contains(chunk)) {
+                continue;
+            }
+            if (started++ >= config.maxChunkLoadsStartedPerTick) {
+                return;
+            }
+            int x = ChunkPos.getX(chunk);
+            int z = ChunkPos.getZ(chunk);
+            if (bobbyBridge.hasChunk(x, z)) {
+                managedChunks.add(chunk);
+                continue;
+            }
+            loadingChunks.add(chunk);
+            bobbyBridge.loadChunk(x, z, loaded -> {
+                loadingChunks.remove(chunk);
+                if (loaded) {
+                    managedChunks.add(chunk);
+                }
+            });
+        }
+    }
+}

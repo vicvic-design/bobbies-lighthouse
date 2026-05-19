@@ -1,0 +1,5 @@
+{
+  "bobbieslighthouse.command.status": "Anchors: %s, active chunks: %s, Bobby: %s",
+  "bobbieslighthouse.command.cleared": "Cleared %s lodestone anchors.",
+  "bobbieslighthouse.command.refreshed": "Refresh requested."
+}

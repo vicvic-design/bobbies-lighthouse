@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "bobbieslighthouse",
+  "version": "${version}",
+  "name": "BobbiesLightHouse",
+  "description": "Client-only Bobby-assisted prototype that renders cached chunks around discovered lodestones.",
+  "authors": [
+    "Vicvic"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.vicvic.bobbieslighthouse.LodestoneFarClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.17.0",
+    "minecraft": "1.21.10",
+    "java": ">=21",
+    "fabric-api": "*",
+    "bobby": "*"
+  }
+}
