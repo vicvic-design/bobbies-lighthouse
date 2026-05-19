@@ -28,7 +28,7 @@ This file tracks human-readable changes. Git tracks the exact file-level history
   - Bobby mixin interface missing from the client chunk source.
   - Bobby fake chunk manager is null because Bobby is disabled or not initialized.
 
-## Unreleased - Diagnostic Tooling
+## 0.1.2 - Diagnostic Tooling - 2026-05-19
 
 - Expanded `/bobbieslighthouse status` with queue, desired chunk, eligible anchor, and load counters.
 - Added `/bobbieslighthouse anchors` for nearby/stored anchor inspection.
