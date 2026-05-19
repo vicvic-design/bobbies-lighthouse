@@ -27,3 +27,11 @@ This file tracks human-readable changes. Git tracks the exact file-level history
   - Bobby classes/methods unavailable.
   - Bobby mixin interface missing from the client chunk source.
   - Bobby fake chunk manager is null because Bobby is disabled or not initialized.
+
+## Unreleased - Diagnostic Tooling
+
+- Expanded `/bobbieslighthouse status` with queue, desired chunk, eligible anchor, and load counters.
+- Added `/bobbieslighthouse anchors` for nearby/stored anchor inspection.
+- Added `/bobbieslighthouse explain` to explain the nearest anchor render decision.
+- Added `/bobbieslighthouse bobby` for a Bobby bridge probe.
+- Added `/bobbieslighthouse dump` to write `.minecraft/logs/bobbieslighthouse-diagnostic.json`.

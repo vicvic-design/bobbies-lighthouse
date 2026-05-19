@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -23,6 +24,7 @@ public final class BobbyBridge {
     private Method loadMethod;
     private Method loadTagMethod;
     private Method deserializeMethod;
+    private Method getFakeChunksMethod;
     private boolean warnedUnavailable;
 
     public BobbyBridge(Minecraft client) {
@@ -55,6 +57,40 @@ public final class BobbyBridge {
         } catch (ReflectiveOperationException e) {
             return "bobby_manager_failed:" + e.getClass().getSimpleName() + ":" + e.getMessage();
         }
+    }
+
+    public String probe() {
+        if (client.level == null) {
+            return "world=no_world";
+        }
+        StringBuilder result = new StringBuilder();
+        result.append("chunkSource=").append(client.level.getChunkSource().getClass().getName());
+        try {
+            initializeReflection();
+            result.append(", extClass=found");
+            result.append(", managerClass=found");
+        } catch (ReflectiveOperationException e) {
+            return result.append(", reflection=")
+                    .append(e.getClass().getSimpleName())
+                    .append(":")
+                    .append(e.getMessage())
+                    .toString();
+        }
+        Object manager = manager();
+        if (manager == null) {
+            return result.append(", manager=null, diagnostic=").append(diagnostics()).toString();
+        }
+        result.append(", manager=").append(manager.getClass().getName());
+        result.append(", fakeChunks=").append(fakeChunkCount(manager));
+        return result.toString();
+    }
+
+    public int fakeChunkCount() {
+        Object manager = manager();
+        if (manager == null) {
+            return 0;
+        }
+        return fakeChunkCount(manager);
     }
 
     public boolean hasChunk(int x, int z) {
@@ -166,7 +202,20 @@ public final class BobbyBridge {
         loadMethod = fakeChunkManagerClass.getMethod("load", int.class, int.class, LevelChunk.class);
         loadTagMethod = fakeChunkManagerClass.getDeclaredMethod("loadTag", ChunkPos.class, int.class);
         loadTagMethod.setAccessible(true);
+        getFakeChunksMethod = fakeChunkManagerClass.getMethod("getFakeChunks");
         deserializeMethod = chunkSerializerClass.getMethod("deserialize", ChunkPos.class, CompoundTag.class, Level.class);
+    }
+
+    private int fakeChunkCount(Object manager) {
+        try {
+            Object value = getFakeChunksMethod.invoke(manager);
+            if (value instanceof Collection<?> collection) {
+                return collection.size();
+            }
+        } catch (ReflectiveOperationException e) {
+            warn("Failed to read Bobby fake chunk count", e);
+        }
+        return -1;
     }
 
     private void warn(String message, Exception e) {

@@ -21,6 +21,10 @@ public final class AnchorRenderCoordinator {
     private final Set<Long> managedChunks = new HashSet<>();
     private final Set<Long> loadingChunks = new HashSet<>();
     private int ticksUntilRefresh;
+    private int lastDesiredChunkCount;
+    private int lastEligibleAnchorCount;
+    private int successfulLoads;
+    private int failedLoads;
 
     public AnchorRenderCoordinator(
             Minecraft client,
@@ -51,12 +55,62 @@ public final class AnchorRenderCoordinator {
         return managedChunks.size();
     }
 
+    public int queuedLoadCount() {
+        return loadingChunks.size();
+    }
+
+    public int lastDesiredChunkCount() {
+        return lastDesiredChunkCount;
+    }
+
+    public int lastEligibleAnchorCount() {
+        return lastEligibleAnchorCount;
+    }
+
+    public int successfulLoadCount() {
+        return successfulLoads;
+    }
+
+    public int failedLoadCount() {
+        return failedLoads;
+    }
+
     public boolean isBobbyAvailable() {
         return bobbyBridge.isAvailable();
     }
 
     public String bobbyDiagnostics() {
         return bobbyBridge.diagnostics();
+    }
+
+    public String bobbyProbe() {
+        return bobbyBridge.probe();
+    }
+
+    public int bobbyFakeChunkCount() {
+        return bobbyBridge.fakeChunkCount();
+    }
+
+    public String explainNearestAnchor() {
+        if (client.player == null || client.level == null) {
+            return "No world/player loaded.";
+        }
+        ChunkPos playerChunk = client.player.chunkPosition();
+        LodestoneAnchor nearest = null;
+        int nearestDistanceSquared = Integer.MAX_VALUE;
+        for (LodestoneAnchor anchor : anchorStore.all()) {
+            int dx = anchor.chunkX - playerChunk.x;
+            int dz = anchor.chunkZ - playerChunk.z;
+            int distanceSquared = dx * dx + dz * dz;
+            if (distanceSquared < nearestDistanceSquared) {
+                nearest = anchor;
+                nearestDistanceSquared = distanceSquared;
+            }
+        }
+        if (nearest == null) {
+            return "No anchors are stored.";
+        }
+        return explainAnchor(nearest, playerChunk);
     }
 
     public void tick() {
@@ -89,6 +143,7 @@ public final class AnchorRenderCoordinator {
                 candidates.add(anchor);
             }
         }
+        lastEligibleAnchorCount = candidates.size();
         candidates.sort(Comparator.comparingInt(anchor -> {
             int dx = anchor.chunkX - playerChunk.x;
             int dz = anchor.chunkZ - playerChunk.z;
@@ -102,7 +157,32 @@ public final class AnchorRenderCoordinator {
             }
             addAnchorChunks(anchor, playerChunk, currentRenderDistance, desired);
         }
+        lastDesiredChunkCount = desired.size();
         return desired;
+    }
+
+    private String explainAnchor(LodestoneAnchor anchor, ChunkPos playerChunk) {
+        int dx = anchor.chunkX - playerChunk.x;
+        int dz = anchor.chunkZ - playerChunk.z;
+        int squareDistance = Math.max(Math.abs(dx), Math.abs(dz));
+        int distanceSquared = dx * dx + dz * dz;
+        boolean wrongDimension = !anchor.dimension.equals(anchorStore.dimensionKey());
+        boolean tooFar = distanceSquared > config.maxAnchorDistanceChunks * config.maxAnchorDistanceChunks;
+        boolean alreadyNear = squareDistance <= client.options.renderDistance().get();
+        boolean managed = managedChunks.contains(ChunkPos.asLong(anchor.chunkX, anchor.chunkZ));
+        boolean loading = loadingChunks.contains(ChunkPos.asLong(anchor.chunkX, anchor.chunkZ));
+        return "nearestAnchor block=(" + anchor.blockX + "," + anchor.blockY + "," + anchor.blockZ + ")"
+                + " chunk=(" + anchor.chunkX + "," + anchor.chunkZ + ")"
+                + " enabled=" + anchor.enabled
+                + " dimensionOk=" + !wrongDimension
+                + " distanceChunks=" + squareDistance
+                + " maxAnchorDistanceChunks=" + config.maxAnchorDistanceChunks
+                + " insideNormalRenderDistance=" + alreadyNear
+                + " tooFar=" + tooFar
+                + " bobby=" + bobbyBridge.diagnostics()
+                + " centerChunkManaged=" + managed
+                + " centerChunkLoading=" + loading
+                + (anchor.disabledReason.isEmpty() ? "" : " disabledReason=" + anchor.disabledReason);
     }
 
     private void addAnchorChunks(LodestoneAnchor anchor, ChunkPos playerChunk, int currentRenderDistance, Set<Long> desired) {
@@ -158,6 +238,9 @@ public final class AnchorRenderCoordinator {
                 loadingChunks.remove(chunk);
                 if (loaded) {
                     managedChunks.add(chunk);
+                    successfulLoads++;
+                } else {
+                    failedLoads++;
                 }
             });
         }

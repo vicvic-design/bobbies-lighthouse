@@ -56,6 +56,14 @@ public final class AnchorStore {
         return anchors.values();
     }
 
+    public String currentWorldKey() {
+        return currentWorldKey;
+    }
+
+    public String currentFilePath() {
+        return currentFile == null ? "" : currentFile.toString();
+    }
+
     public int size() {
         return anchors.size();
     }
