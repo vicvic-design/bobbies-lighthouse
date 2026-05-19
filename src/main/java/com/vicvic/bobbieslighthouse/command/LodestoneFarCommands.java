@@ -30,6 +30,7 @@ public final class LodestoneFarCommands {
                                     "Anchors: " + anchorStore.size()
                                             + ", active chunks: " + renderCoordinator.activeChunkCount()
                                             + ", Bobby bridge: " + (renderCoordinator.isBobbyAvailable() ? "ok" : "unavailable")
+                                            + ", diagnostic: " + renderCoordinator.bobbyDiagnostics()
                                             + ", shape: " + config.shape
                             ));
                             return 1;

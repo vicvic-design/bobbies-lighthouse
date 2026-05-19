@@ -55,6 +55,10 @@ public final class AnchorRenderCoordinator {
         return bobbyBridge.isAvailable();
     }
 
+    public String bobbyDiagnostics() {
+        return bobbyBridge.diagnostics();
+    }
+
     public void tick() {
         if (!config.enabled || client.player == null || client.level == null) {
             reset();

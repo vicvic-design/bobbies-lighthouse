@@ -33,6 +33,30 @@ public final class BobbyBridge {
         return manager() != null;
     }
 
+    public String diagnostics() {
+        if (client.level == null) {
+            return "no_world";
+        }
+        Object chunkSource = client.level.getChunkSource();
+        try {
+            initializeReflection();
+        } catch (ReflectiveOperationException e) {
+            return "bobby_reflection_failed:" + e.getClass().getSimpleName() + ":" + e.getMessage();
+        }
+        if (!clientChunkCacheExtClass.isInstance(chunkSource)) {
+            return "bobby_mixin_missing:chunkSource=" + chunkSource.getClass().getName();
+        }
+        try {
+            Object fakeChunkManager = getFakeChunkManagerMethod.invoke(chunkSource);
+            if (fakeChunkManager == null) {
+                return "bobby_manager_null:bobby_disabled_or_not_initialized";
+            }
+            return "ok:manager=" + fakeChunkManager.getClass().getName();
+        } catch (ReflectiveOperationException e) {
+            return "bobby_manager_failed:" + e.getClass().getSimpleName() + ":" + e.getMessage();
+        }
+    }
+
     public boolean hasChunk(int x, int z) {
         Object manager = manager();
         if (manager == null) {
@@ -114,11 +138,16 @@ public final class BobbyBridge {
             initializeReflection();
             Object chunkSource = client.level.getChunkSource();
             if (!clientChunkCacheExtClass.isInstance(chunkSource)) {
+                warn("Bobby mixin interface is not present on chunk source " + chunkSource.getClass().getName(), null);
                 return null;
             }
-            return getFakeChunkManagerMethod.invoke(chunkSource);
+            Object fakeChunkManager = getFakeChunkManagerMethod.invoke(chunkSource);
+            if (fakeChunkManager == null) {
+                warn("Bobby fake chunk manager is null. Bobby may be disabled, not initialized for this world, or inactive in singleplayer.", null);
+            }
+            return fakeChunkManager;
         } catch (ReflectiveOperationException e) {
-            warn(e);
+            warn("Bobby reflection failed while resolving fake chunk manager", e);
             return null;
         }
     }
@@ -140,10 +169,18 @@ public final class BobbyBridge {
         deserializeMethod = chunkSerializerClass.getMethod("deserialize", ChunkPos.class, CompoundTag.class, Level.class);
     }
 
-    private void warn(Exception e) {
+    private void warn(String message, Exception e) {
         if (!warnedUnavailable) {
             warnedUnavailable = true;
-            LodestoneFarClient.LOGGER.warn("Bobby bridge unavailable; BobbiesLightHouse rendering is paused", e);
+            if (e == null) {
+                LodestoneFarClient.LOGGER.warn("Bobby bridge unavailable; BobbiesLightHouse rendering is paused. {}", message);
+            } else {
+                LodestoneFarClient.LOGGER.warn("Bobby bridge unavailable; BobbiesLightHouse rendering is paused. {}", message, e);
+            }
         }
+    }
+
+    private void warn(Exception e) {
+        warn("Bobby reflection failed", e);
     }
 }
