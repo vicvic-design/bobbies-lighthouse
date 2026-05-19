@@ -35,3 +35,9 @@ This file tracks human-readable changes. Git tracks the exact file-level history
 - Added `/bobbieslighthouse explain` to explain the nearest anchor render decision.
 - Added `/bobbieslighthouse bobby` for a Bobby bridge probe.
 - Added `/bobbieslighthouse dump` to write `.minecraft/logs/bobbieslighthouse-diagnostic.json`.
+
+## 0.1.3 - Bobby 5.2.10 Bridge Compatibility - 2026-05-19
+
+- Updated the Bobby bridge to prefer `ClientChunkManagerExt`, with `ClientChunkCacheExt` retained as an older-version fallback.
+- Improved Bobby diagnostics to report the exact extension interface selected.
+- Stopped starting cached chunk loads while the Bobby bridge is unavailable, preventing inflated failed-load counters.

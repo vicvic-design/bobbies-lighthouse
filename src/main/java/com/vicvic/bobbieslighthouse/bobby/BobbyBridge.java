@@ -15,8 +15,14 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class BobbyBridge {
+    private static final String[] CLIENT_CHUNK_EXT_CLASS_NAMES = {
+            "de.johni0702.minecraft.bobby.ext.ClientChunkManagerExt",
+            "de.johni0702.minecraft.bobby.ext.ClientChunkCacheExt"
+    };
+
     private final Minecraft client;
     private Class<?> clientChunkCacheExtClass;
+    private String clientChunkExtClassName;
     private Class<?> chunkSerializerClass;
     private Method getFakeChunkManagerMethod;
     private Method getChunkMethod;
@@ -46,7 +52,7 @@ public final class BobbyBridge {
             return "bobby_reflection_failed:" + e.getClass().getSimpleName() + ":" + e.getMessage();
         }
         if (!clientChunkCacheExtClass.isInstance(chunkSource)) {
-            return "bobby_mixin_missing:chunkSource=" + chunkSource.getClass().getName();
+            return "bobby_mixin_missing:extClass=" + clientChunkExtClassName + ":chunkSource=" + chunkSource.getClass().getName();
         }
         try {
             Object fakeChunkManager = getFakeChunkManagerMethod.invoke(chunkSource);
@@ -67,7 +73,7 @@ public final class BobbyBridge {
         result.append("chunkSource=").append(client.level.getChunkSource().getClass().getName());
         try {
             initializeReflection();
-            result.append(", extClass=found");
+            result.append(", extClass=").append(clientChunkExtClassName);
             result.append(", managerClass=found");
         } catch (ReflectiveOperationException e) {
             return result.append(", reflection=")
@@ -174,7 +180,7 @@ public final class BobbyBridge {
             initializeReflection();
             Object chunkSource = client.level.getChunkSource();
             if (!clientChunkCacheExtClass.isInstance(chunkSource)) {
-                warn("Bobby mixin interface is not present on chunk source " + chunkSource.getClass().getName(), null);
+                warn("Bobby mixin interface " + clientChunkExtClassName + " is not present on chunk source " + chunkSource.getClass().getName(), null);
                 return null;
             }
             Object fakeChunkManager = getFakeChunkManagerMethod.invoke(chunkSource);
@@ -192,7 +198,7 @@ public final class BobbyBridge {
         if (clientChunkCacheExtClass != null) {
             return;
         }
-        clientChunkCacheExtClass = Class.forName("de.johni0702.minecraft.bobby.ext.ClientChunkCacheExt");
+        clientChunkCacheExtClass = findClientChunkExtClass();
         chunkSerializerClass = Class.forName("de.johni0702.minecraft.bobby.ChunkSerializer");
         getFakeChunkManagerMethod = clientChunkCacheExtClass.getMethod("bobby_getFakeChunkManager");
 
@@ -204,6 +210,20 @@ public final class BobbyBridge {
         loadTagMethod.setAccessible(true);
         getFakeChunksMethod = fakeChunkManagerClass.getMethod("getFakeChunks");
         deserializeMethod = chunkSerializerClass.getMethod("deserialize", ChunkPos.class, CompoundTag.class, Level.class);
+    }
+
+    private Class<?> findClientChunkExtClass() throws ClassNotFoundException {
+        ClassNotFoundException lastFailure = null;
+        for (String className : CLIENT_CHUNK_EXT_CLASS_NAMES) {
+            try {
+                Class<?> extClass = Class.forName(className);
+                clientChunkExtClassName = className;
+                return extClass;
+            } catch (ClassNotFoundException e) {
+                lastFailure = e;
+            }
+        }
+        throw lastFailure == null ? new ClassNotFoundException("No Bobby client chunk extension class names configured") : lastFailure;
     }
 
     private int fakeChunkCount(Object manager) {

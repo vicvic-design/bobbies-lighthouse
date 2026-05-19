@@ -219,6 +219,10 @@ public final class AnchorRenderCoordinator {
     }
 
     private void loadDesired(Set<Long> desired) {
+        if (!bobbyBridge.isAvailable()) {
+            loadingChunks.clear();
+            return;
+        }
         int started = 0;
         for (long chunk : desired) {
             if (managedChunks.contains(chunk) || loadingChunks.contains(chunk)) {
