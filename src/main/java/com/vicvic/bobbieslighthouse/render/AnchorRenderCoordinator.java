@@ -106,6 +106,32 @@ public final class AnchorRenderCoordinator {
         visibleSectionsInjected += count;
     }
 
+    public int filteredBobbyViewDistance(int requestedViewDistance) {
+        if (!config.enabled || !config.onlyLoadLodestoneChunksBeyondBobbyCutoff) {
+            return requestedViewDistance;
+        }
+        return Math.min(requestedViewDistance, Math.max(2, config.bobbyFilterCutoffChunks));
+    }
+
+    public boolean isWithinBobbyFilterCutoff(int x, int z) {
+        if (client.player == null) {
+            return true;
+        }
+        ChunkPos playerChunk = client.player.chunkPosition();
+        int cutoff = Math.max(2, config.bobbyFilterCutoffChunks);
+        return Math.abs(x - playerChunk.x) <= cutoff && Math.abs(z - playerChunk.z) <= cutoff;
+    }
+
+    public boolean isAllowedFarBobbyChunk(int x, int z) {
+        if (!config.enabled || !config.onlyLoadLodestoneChunksBeyondBobbyCutoff) {
+            return true;
+        }
+        if (isWithinBobbyFilterCutoff(x, z)) {
+            return true;
+        }
+        return hasEnabledLodestoneAnchorInChunk(x, z);
+    }
+
     public boolean isBobbyAvailable() {
         return bobbyBridge.isAvailable();
     }
@@ -183,7 +209,9 @@ public final class AnchorRenderCoordinator {
                 + ", staleManagedLastRefresh=" + staleManagedChunks
                 + ", renderSectionsDirtied=" + renderSectionsDirtied
                 + ", rendererHorizonChunks=" + rendererHorizonChunks
-                + ", visibleSectionsInjected=" + visibleSectionsInjected;
+                + ", visibleSectionsInjected=" + visibleSectionsInjected
+                + ", bobbyFilterCutoffChunks=" + config.bobbyFilterCutoffChunks
+                + ", farBobbyOnlyLodestoneChunks=" + config.onlyLoadLodestoneChunksBeyondBobbyCutoff;
     }
 
     public void tick() {
@@ -275,6 +303,9 @@ public final class AnchorRenderCoordinator {
                 if (playerDx <= currentRenderDistance && playerDz <= currentRenderDistance) {
                     continue;
                 }
+                if (!isAllowedFarCandidateChunk(anchor, x, z, playerDx, playerDz)) {
+                    continue;
+                }
                 if (bobbyBridge.isInNormalBobbyRange(x, z)) {
                     continue;
                 }
@@ -328,6 +359,29 @@ public final class AnchorRenderCoordinator {
         ChunkPos playerChunk = client.player.chunkPosition();
         int renderDistance = client.options.renderDistance().get();
         return Math.abs(x - playerChunk.x) <= renderDistance && Math.abs(z - playerChunk.z) <= renderDistance;
+    }
+
+    private boolean isAllowedFarCandidateChunk(LodestoneAnchor anchor, int x, int z, int playerDx, int playerDz) {
+        if (!config.onlyLoadLodestoneChunksBeyondBobbyCutoff) {
+            return true;
+        }
+        int cutoff = Math.max(2, config.bobbyFilterCutoffChunks);
+        if (playerDx <= cutoff && playerDz <= cutoff) {
+            return true;
+        }
+        return x == anchor.chunkX && z == anchor.chunkZ;
+    }
+
+    private boolean hasEnabledLodestoneAnchorInChunk(int x, int z) {
+        for (LodestoneAnchor anchor : anchorStore.all()) {
+            if (anchor.enabled
+                    && anchor.dimension.equals(anchorStore.dimensionKey())
+                    && anchor.chunkX == x
+                    && anchor.chunkZ == z) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateRendererHorizon(Set<Long> desired) {

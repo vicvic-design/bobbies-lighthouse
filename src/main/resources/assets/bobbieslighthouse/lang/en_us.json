@@ -1,5 +1,7 @@
 {
   "bobbieslighthouse.command.status": "Anchors: %s, active chunks: %s, Bobby: %s",
   "bobbieslighthouse.command.cleared": "Cleared %s lodestone anchors.",
-  "bobbieslighthouse.command.refreshed": "Refresh requested."
+  "bobbieslighthouse.command.refreshed": "Refresh requested.",
+  "option.bobbieslighthouse.bobby_filter_cutoff": "Bobby lighthouse cutoff",
+  "tooltip.option.bobbieslighthouse.bobby_filter_cutoff": "Past this distance from the player, Bobby is filtered down to chunks containing known lodestone anchors."
 }

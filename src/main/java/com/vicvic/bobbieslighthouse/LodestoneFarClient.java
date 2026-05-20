@@ -23,10 +23,12 @@ public final class LodestoneFarClient implements ClientModInitializer {
     private AnchorScanner anchorScanner;
     private AnchorRenderCoordinator renderCoordinator;
     private static AnchorRenderCoordinator activeRenderCoordinator;
+    private static LodestoneFarConfig activeConfig;
 
     @Override
     public void onInitializeClient() {
         config = LodestoneFarConfig.load(client.gameDirectory.toPath());
+        activeConfig = config;
         anchorStore = new AnchorStore(client);
         BobbyBridge bobbyBridge = new BobbyBridge(client);
         anchorScanner = new AnchorScanner(client, config, anchorStore);
@@ -48,6 +50,10 @@ public final class LodestoneFarClient implements ClientModInitializer {
 
     public static AnchorRenderCoordinator renderCoordinator() {
         return activeRenderCoordinator;
+    }
+
+    public static LodestoneFarConfig config() {
+        return activeConfig;
     }
 
     private void tick(Minecraft ignored) {

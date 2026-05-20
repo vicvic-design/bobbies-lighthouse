@@ -24,7 +24,10 @@ public final class LodestoneFarConfig {
     public int maxExtraRenderedChunks = 512;
     public int maxChunkLoadsStartedPerTick = 4;
     public int maxRendererHorizonChunks = 128;
+    public int bobbyFilterCutoffChunks = 16;
+    public boolean onlyLoadLodestoneChunksBeyondBobbyCutoff = true;
     public boolean enableDevCommands = true;
+    private transient Path loadedPath;
 
     public static LodestoneFarConfig load(Path gameDirectory) {
         Path path = gameDirectory.resolve("config").resolve("bobbieslighthouse.json");
@@ -43,7 +46,19 @@ public final class LodestoneFarConfig {
         return config;
     }
 
+    public void setBobbyFilterCutoffChunks(int cutoffChunks) {
+        bobbyFilterCutoffChunks = Math.max(2, cutoffChunks);
+        save();
+    }
+
+    public void save() {
+        if (loadedPath != null) {
+            save(loadedPath);
+        }
+    }
+
     public void save(Path path) {
+        loadedPath = path;
         try {
             Files.createDirectories(path.getParent());
             try (Writer writer = Files.newBufferedWriter(path)) {

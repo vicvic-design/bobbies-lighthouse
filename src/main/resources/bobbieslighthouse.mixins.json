@@ -3,8 +3,10 @@
   "package": "com.vicvic.bobbieslighthouse.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "BobbyFakeChunkManagerMixin",
     "SectionOcclusionGraphAccessor",
     "SectionOcclusionGraphMixin",
+    "SodiumGameOptionPagesMixin",
     "ViewAreaAccessor",
     "ViewAreaMixin"
   ],
