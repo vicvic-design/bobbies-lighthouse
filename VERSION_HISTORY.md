@@ -53,3 +53,9 @@ This file tracks human-readable changes. Git tracks the exact file-level history
 - Recheck lighthouse-managed chunks against Bobby on each refresh.
 - If Bobby has unloaded a chunk that is still desired by a lighthouse anchor, drop the stale managed marker so the chunk can be loaded again.
 - Added stale managed chunk counts to `/bobbieslighthouse status`, `/bobbieslighthouse renderprobe`, and diagnostic dumps.
+
+## 0.1.6 - Render Section Rebuild Probe - 2026-05-20
+
+- Mark every vertical client render section dirty after a lighthouse chunk is loaded or adopted from Bobby.
+- Notify the level renderer that the lighthouse sections are non-empty so the occlusion graph has a chance to include them.
+- Added render section dirty counts to `/bobbieslighthouse status`, `/bobbieslighthouse renderprobe`, and diagnostic dumps.

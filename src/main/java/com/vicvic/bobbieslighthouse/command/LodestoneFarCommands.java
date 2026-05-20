@@ -49,6 +49,7 @@ public final class LodestoneFarCommands {
                                             + ", successful loads: " + renderCoordinator.successfulLoadCount()
                                             + ", failed loads: " + renderCoordinator.failedLoadCount()
                                             + ", stale managed chunks: " + renderCoordinator.staleManagedChunkCount()
+                                            + ", render sections dirtied: " + renderCoordinator.renderSectionsDirtiedCount()
                                             + ", Bobby bridge: " + (renderCoordinator.isBobbyAvailable() ? "ok" : "unavailable")
                                             + ", diagnostic: " + renderCoordinator.bobbyDiagnostics()
                                             + ", shape: " + config.shape
@@ -160,6 +161,7 @@ public final class LodestoneFarCommands {
         dump.put("successfulLoads", renderCoordinator.successfulLoadCount());
         dump.put("failedLoads", renderCoordinator.failedLoadCount());
         dump.put("staleManagedChunksLastRefresh", renderCoordinator.staleManagedChunkCount());
+        dump.put("renderSectionsDirtied", renderCoordinator.renderSectionsDirtiedCount());
         dump.put("bobbyDiagnostic", renderCoordinator.bobbyDiagnostics());
         dump.put("bobbyProbe", renderCoordinator.bobbyProbe());
         dump.put("bobbyFakeChunks", renderCoordinator.bobbyFakeChunkCount());

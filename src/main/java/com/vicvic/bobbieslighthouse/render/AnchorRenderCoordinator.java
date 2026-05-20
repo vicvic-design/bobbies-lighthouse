@@ -5,6 +5,7 @@ import com.vicvic.bobbieslighthouse.anchor.LodestoneAnchor;
 import com.vicvic.bobbieslighthouse.bobby.BobbyBridge;
 import com.vicvic.bobbieslighthouse.config.LodestoneFarConfig;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public final class AnchorRenderCoordinator {
     private int successfulLoads;
     private int failedLoads;
     private int staleManagedChunks;
+    private int renderSectionsDirtied;
 
     public AnchorRenderCoordinator(
             Minecraft client,
@@ -78,6 +80,10 @@ public final class AnchorRenderCoordinator {
 
     public int staleManagedChunkCount() {
         return staleManagedChunks;
+    }
+
+    public int renderSectionsDirtiedCount() {
+        return renderSectionsDirtied;
     }
 
     public boolean isBobbyAvailable() {
@@ -154,7 +160,8 @@ public final class AnchorRenderCoordinator {
                 + ", normalRenderRange=" + normalRenderRange
                 + ", loadedInBobby=" + loadedInBobby
                 + ", missingFromBobby=" + missingFromBobby
-                + ", staleManagedLastRefresh=" + staleManagedChunks;
+                + ", staleManagedLastRefresh=" + staleManagedChunks
+                + ", renderSectionsDirtied=" + renderSectionsDirtied;
     }
 
     public void tick() {
@@ -317,6 +324,7 @@ public final class AnchorRenderCoordinator {
             int z = ChunkPos.getZ(chunk);
             if (bobbyBridge.hasChunk(x, z)) {
                 managedChunks.add(chunk);
+                dirtyChunkRenderSections(x, z);
                 continue;
             }
             loadingChunks.add(chunk);
@@ -324,11 +332,25 @@ public final class AnchorRenderCoordinator {
                 loadingChunks.remove(chunk);
                 if (loaded) {
                     managedChunks.add(chunk);
+                    dirtyChunkRenderSections(x, z);
                     successfulLoads++;
                 } else {
                     failedLoads++;
                 }
             });
         }
+    }
+
+    private void dirtyChunkRenderSections(int x, int z) {
+        if (client.level == null || client.levelRenderer == null) {
+            return;
+        }
+        int dirtied = 0;
+        for (int y = client.level.getMinSectionY(); y < client.level.getMaxSectionY(); y++) {
+            client.levelRenderer.setSectionDirty(x, y, z);
+            client.levelRenderer.onSectionBecomingNonEmpty(SectionPos.asLong(x, y, z));
+            dirtied++;
+        }
+        renderSectionsDirtied += dirtied;
     }
 }
