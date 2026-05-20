@@ -14,7 +14,7 @@ public final class LodestoneFarConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public boolean enabled = true;
-    public int anchorRadiusChunks = 4;
+    public int anchorRadiusChunks = 5;
     public int maxAnchorDistanceChunks = 96;
     public Shape shape = Shape.SQUARE;
     public int scanIntervalTicks = 40;
@@ -25,6 +25,7 @@ public final class LodestoneFarConfig {
     public int maxChunkLoadsStartedPerTick = 4;
     public int maxRendererHorizonChunks = 128;
     public int bobbyFilterCutoffChunks = 16;
+    public int farLodestoneRadiusChunks = 5;
     public boolean onlyLoadLodestoneChunksBeyondBobbyCutoff = true;
     public boolean enableDevCommands = true;
     private transient Path loadedPath;

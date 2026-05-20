@@ -129,7 +129,7 @@ public final class AnchorRenderCoordinator {
         if (isWithinBobbyFilterCutoff(x, z)) {
             return true;
         }
-        return hasEnabledLodestoneAnchorInChunk(x, z);
+        return isWithinEnabledLodestoneRadius(x, z);
     }
 
     public boolean isBobbyAvailable() {
@@ -211,6 +211,7 @@ public final class AnchorRenderCoordinator {
                 + ", rendererHorizonChunks=" + rendererHorizonChunks
                 + ", visibleSectionsInjected=" + visibleSectionsInjected
                 + ", bobbyFilterCutoffChunks=" + config.bobbyFilterCutoffChunks
+                + ", farLodestoneRadiusChunks=" + config.farLodestoneRadiusChunks
                 + ", farBobbyOnlyLodestoneChunks=" + config.onlyLoadLodestoneChunksBeyondBobbyCutoff;
     }
 
@@ -369,19 +370,28 @@ public final class AnchorRenderCoordinator {
         if (playerDx <= cutoff && playerDz <= cutoff) {
             return true;
         }
-        return x == anchor.chunkX && z == anchor.chunkZ;
+        return isWithinAnchorRadius(anchor, x, z, Math.max(0, config.farLodestoneRadiusChunks));
     }
 
-    private boolean hasEnabledLodestoneAnchorInChunk(int x, int z) {
+    private boolean isWithinEnabledLodestoneRadius(int x, int z) {
+        int radius = Math.max(0, config.farLodestoneRadiusChunks);
         for (LodestoneAnchor anchor : anchorStore.all()) {
             if (anchor.enabled
                     && anchor.dimension.equals(anchorStore.dimensionKey())
-                    && anchor.chunkX == x
-                    && anchor.chunkZ == z) {
+                    && isWithinAnchorRadius(anchor, x, z, radius)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean isWithinAnchorRadius(LodestoneAnchor anchor, int x, int z, int radius) {
+        int dx = x - anchor.chunkX;
+        int dz = z - anchor.chunkZ;
+        if (Math.abs(dx) > radius || Math.abs(dz) > radius) {
+            return false;
+        }
+        return config.shape != LodestoneFarConfig.Shape.CIRCLE || dx * dx + dz * dz <= radius * radius;
     }
 
     private void updateRendererHorizon(Set<Long> desired) {
