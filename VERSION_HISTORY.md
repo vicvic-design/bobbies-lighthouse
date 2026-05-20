@@ -47,3 +47,9 @@ This file tracks human-readable changes. Git tracks the exact file-level history
 - Added `/bobbieslighthouse renderprobe` to classify managed chunks as lighthouse-only, normal Bobby range overlap, or normal Minecraft render range.
 - Avoid loading lighthouse-managed chunks when Bobby reports that they are already inside its normal player-centered range.
 - Release lighthouse ownership without explicitly unloading chunks that have moved into normal Bobby or normal render range, reducing edge-of-range handoff flicker.
+
+## 0.1.5 - Stale Bobby Chunk Reacquire - 2026-05-20
+
+- Recheck lighthouse-managed chunks against Bobby on each refresh.
+- If Bobby has unloaded a chunk that is still desired by a lighthouse anchor, drop the stale managed marker so the chunk can be loaded again.
+- Added stale managed chunk counts to `/bobbieslighthouse status`, `/bobbieslighthouse renderprobe`, and diagnostic dumps.

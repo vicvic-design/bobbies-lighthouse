@@ -25,6 +25,7 @@ public final class AnchorRenderCoordinator {
     private int lastEligibleAnchorCount;
     private int successfulLoads;
     private int failedLoads;
+    private int staleManagedChunks;
 
     public AnchorRenderCoordinator(
             Minecraft client,
@@ -73,6 +74,10 @@ public final class AnchorRenderCoordinator {
 
     public int failedLoadCount() {
         return failedLoads;
+    }
+
+    public int staleManagedChunkCount() {
+        return staleManagedChunks;
     }
 
     public boolean isBobbyAvailable() {
@@ -148,7 +153,8 @@ public final class AnchorRenderCoordinator {
                 + ", bobbyRangeOverlap=" + bobbyRangeOverlap
                 + ", normalRenderRange=" + normalRenderRange
                 + ", loadedInBobby=" + loadedInBobby
-                + ", missingFromBobby=" + missingFromBobby;
+                + ", missingFromBobby=" + missingFromBobby
+                + ", staleManagedLastRefresh=" + staleManagedChunks;
     }
 
     public void tick() {
@@ -162,6 +168,7 @@ public final class AnchorRenderCoordinator {
         ticksUntilRefresh = Math.max(1, config.renderRefreshIntervalTicks);
         Set<Long> desired = computeDesiredChunks();
         unloadUndesired(desired);
+        reconcileManagedChunks(desired);
         loadDesired(desired);
     }
 
@@ -261,6 +268,27 @@ public final class AnchorRenderCoordinator {
             }
         }
         loadingChunks.removeIf(chunk -> !desired.contains(chunk));
+    }
+
+    private void reconcileManagedChunks(Set<Long> desired) {
+        staleManagedChunks = 0;
+        if (!bobbyBridge.isAvailable()) {
+            managedChunks.clear();
+            loadingChunks.clear();
+            return;
+        }
+        for (long chunk : new HashSet<>(managedChunks)) {
+            if (!desired.contains(chunk)) {
+                continue;
+            }
+            int x = ChunkPos.getX(chunk);
+            int z = ChunkPos.getZ(chunk);
+            if (!bobbyBridge.hasChunk(x, z)) {
+                managedChunks.remove(chunk);
+                loadingChunks.remove(chunk);
+                staleManagedChunks++;
+            }
+        }
     }
 
     private boolean isInNormalRenderRange(int x, int z) {
