@@ -113,6 +113,44 @@ public final class AnchorRenderCoordinator {
         return explainAnchor(nearest, playerChunk);
     }
 
+    public String renderProbe() {
+        if (client.player == null || client.level == null) {
+            return "No world/player loaded.";
+        }
+        int lighthouseOnly = 0;
+        int bobbyRangeOverlap = 0;
+        int normalRenderRange = 0;
+        int loadedInBobby = 0;
+        int missingFromBobby = 0;
+        ChunkPos playerChunk = client.player.chunkPosition();
+        int renderDistance = client.options.renderDistance().get();
+        for (long chunk : managedChunks) {
+            int x = ChunkPos.getX(chunk);
+            int z = ChunkPos.getZ(chunk);
+            int dx = Math.abs(x - playerChunk.x);
+            int dz = Math.abs(z - playerChunk.z);
+            if (dx <= renderDistance && dz <= renderDistance) {
+                normalRenderRange++;
+            } else if (bobbyBridge.isInNormalBobbyRange(x, z)) {
+                bobbyRangeOverlap++;
+            } else {
+                lighthouseOnly++;
+            }
+            if (bobbyBridge.hasChunk(x, z)) {
+                loadedInBobby++;
+            } else {
+                missingFromBobby++;
+            }
+        }
+        return "managed=" + managedChunks.size()
+                + ", loading=" + loadingChunks.size()
+                + ", lighthouseOnly=" + lighthouseOnly
+                + ", bobbyRangeOverlap=" + bobbyRangeOverlap
+                + ", normalRenderRange=" + normalRenderRange
+                + ", loadedInBobby=" + loadedInBobby
+                + ", missingFromBobby=" + missingFromBobby;
+    }
+
     public void tick() {
         if (!config.enabled || client.player == null || client.level == null) {
             reset();
@@ -200,6 +238,9 @@ public final class AnchorRenderCoordinator {
                 if (playerDx <= currentRenderDistance && playerDz <= currentRenderDistance) {
                     continue;
                 }
+                if (bobbyBridge.isInNormalBobbyRange(x, z)) {
+                    continue;
+                }
                 desired.add(ChunkPos.asLong(x, z));
                 if (desired.size() >= config.maxExtraRenderedChunks) {
                     return;
@@ -211,11 +252,24 @@ public final class AnchorRenderCoordinator {
     private void unloadUndesired(Set<Long> desired) {
         for (long chunk : new HashSet<>(managedChunks)) {
             if (!desired.contains(chunk)) {
-                bobbyBridge.unloadChunk(ChunkPos.getX(chunk), ChunkPos.getZ(chunk));
+                int x = ChunkPos.getX(chunk);
+                int z = ChunkPos.getZ(chunk);
+                if (!isInNormalRenderRange(x, z) && !bobbyBridge.isInNormalBobbyRange(x, z)) {
+                    bobbyBridge.unloadChunk(x, z);
+                }
                 managedChunks.remove(chunk);
             }
         }
         loadingChunks.removeIf(chunk -> !desired.contains(chunk));
+    }
+
+    private boolean isInNormalRenderRange(int x, int z) {
+        if (client.player == null) {
+            return false;
+        }
+        ChunkPos playerChunk = client.player.chunkPosition();
+        int renderDistance = client.options.renderDistance().get();
+        return Math.abs(x - playerChunk.x) <= renderDistance && Math.abs(z - playerChunk.z) <= renderDistance;
     }
 
     private void loadDesired(Set<Long> desired) {

@@ -41,3 +41,9 @@ This file tracks human-readable changes. Git tracks the exact file-level history
 - Updated the Bobby bridge to prefer `ClientChunkManagerExt`, with `ClientChunkCacheExt` retained as an older-version fallback.
 - Improved Bobby diagnostics to report the exact extension interface selected.
 - Stopped starting cached chunk loads while the Bobby bridge is unavailable, preventing inflated failed-load counters.
+
+## Unreleased - Bobby Range Handoff
+
+- Added `/bobbieslighthouse renderprobe` to classify managed chunks as lighthouse-only, normal Bobby range overlap, or normal Minecraft render range.
+- Avoid loading lighthouse-managed chunks when Bobby reports that they are already inside its normal player-centered range.
+- Release lighthouse ownership without explicitly unloading chunks that have moved into normal Bobby or normal render range, reducing edge-of-range handoff flicker.

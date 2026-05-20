@@ -113,6 +113,10 @@ public final class LodestoneFarCommands {
                             context.getSource().sendFeedback(Component.literal(renderCoordinator.bobbyProbe()));
                             return 1;
                         }))
+                        .then(literal("renderprobe").executes(context -> {
+                            context.getSource().sendFeedback(Component.literal(renderCoordinator.renderProbe()));
+                            return 1;
+                        }))
                         .then(literal("dump").executes(context -> {
                             Path path = writeDiagnosticDump(config, anchorStore, renderCoordinator);
                             context.getSource().sendFeedback(Component.literal("Wrote diagnostic dump: " + path));
@@ -157,6 +161,7 @@ public final class LodestoneFarCommands {
         dump.put("bobbyDiagnostic", renderCoordinator.bobbyDiagnostics());
         dump.put("bobbyProbe", renderCoordinator.bobbyProbe());
         dump.put("bobbyFakeChunks", renderCoordinator.bobbyFakeChunkCount());
+        dump.put("renderProbe", renderCoordinator.renderProbe());
         dump.put("explain", renderCoordinator.explainNearestAnchor());
         if (client.player != null) {
             ChunkPos playerChunk = client.player.chunkPosition();

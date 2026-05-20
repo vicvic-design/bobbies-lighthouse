@@ -29,6 +29,7 @@ public final class BobbyBridge {
     private Method unloadMethod;
     private Method loadMethod;
     private Method loadTagMethod;
+    private Method shouldBeLoadedMethod;
     private Method deserializeMethod;
     private Method getFakeChunksMethod;
     private boolean warnedUnavailable;
@@ -106,6 +107,23 @@ public final class BobbyBridge {
         }
         try {
             return getChunkMethod.invoke(manager, x, z) != null;
+        } catch (ReflectiveOperationException e) {
+            warn(e);
+            return false;
+        }
+    }
+
+    public boolean isInNormalBobbyRange(int x, int z) {
+        Object manager = manager();
+        if (manager == null) {
+            return false;
+        }
+        try {
+            if (shouldBeLoadedMethod == null) {
+                return false;
+            }
+            Object value = shouldBeLoadedMethod.invoke(manager, x, z);
+            return value instanceof Boolean && (Boolean) value;
         } catch (ReflectiveOperationException e) {
             warn(e);
             return false;
@@ -206,6 +224,11 @@ public final class BobbyBridge {
         getChunkMethod = fakeChunkManagerClass.getMethod("getChunk", int.class, int.class);
         unloadMethod = fakeChunkManagerClass.getMethod("unload", int.class, int.class, boolean.class);
         loadMethod = fakeChunkManagerClass.getMethod("load", int.class, int.class, LevelChunk.class);
+        try {
+            shouldBeLoadedMethod = fakeChunkManagerClass.getMethod("shouldBeLoaded", int.class, int.class);
+        } catch (NoSuchMethodException ignored) {
+            shouldBeLoadedMethod = null;
+        }
         loadTagMethod = fakeChunkManagerClass.getDeclaredMethod("loadTag", ChunkPos.class, int.class);
         loadTagMethod.setAccessible(true);
         getFakeChunksMethod = fakeChunkManagerClass.getMethod("getFakeChunks");
