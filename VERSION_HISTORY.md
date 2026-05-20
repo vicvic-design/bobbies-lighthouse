@@ -42,7 +42,7 @@ This file tracks human-readable changes. Git tracks the exact file-level history
 - Improved Bobby diagnostics to report the exact extension interface selected.
 - Stopped starting cached chunk loads while the Bobby bridge is unavailable, preventing inflated failed-load counters.
 
-## Unreleased - Bobby Range Handoff
+## 0.1.4 - Bobby Range Handoff - 2026-05-20
 
 - Added `/bobbieslighthouse renderprobe` to classify managed chunks as lighthouse-only, normal Bobby range overlap, or normal Minecraft render range.
 - Avoid loading lighthouse-managed chunks when Bobby reports that they are already inside its normal player-centered range.
