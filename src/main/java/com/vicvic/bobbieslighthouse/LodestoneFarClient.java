@@ -22,6 +22,7 @@ public final class LodestoneFarClient implements ClientModInitializer {
     private AnchorStore anchorStore;
     private AnchorScanner anchorScanner;
     private AnchorRenderCoordinator renderCoordinator;
+    private static AnchorRenderCoordinator activeRenderCoordinator;
 
     @Override
     public void onInitializeClient() {
@@ -30,6 +31,7 @@ public final class LodestoneFarClient implements ClientModInitializer {
         BobbyBridge bobbyBridge = new BobbyBridge(client);
         anchorScanner = new AnchorScanner(client, config, anchorStore);
         renderCoordinator = new AnchorRenderCoordinator(client, config, anchorStore, bobbyBridge);
+        activeRenderCoordinator = renderCoordinator;
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, joinedClient) -> {
             anchorStore.openForCurrentWorld();
@@ -42,6 +44,10 @@ public final class LodestoneFarClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
         LodestoneFarCommands.register(config, anchorStore, anchorScanner, renderCoordinator);
+    }
+
+    public static AnchorRenderCoordinator renderCoordinator() {
+        return activeRenderCoordinator;
     }
 
     private void tick(Minecraft ignored) {

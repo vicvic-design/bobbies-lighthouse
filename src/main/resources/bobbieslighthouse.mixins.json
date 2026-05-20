@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.vicvic.bobbieslighthouse.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "SectionOcclusionGraphAccessor",
+    "SectionOcclusionGraphMixin",
+    "ViewAreaAccessor",
+    "ViewAreaMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

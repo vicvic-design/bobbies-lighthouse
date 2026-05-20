@@ -23,6 +23,7 @@ public final class LodestoneFarConfig {
     public int maxActiveAnchors = 8;
     public int maxExtraRenderedChunks = 512;
     public int maxChunkLoadsStartedPerTick = 4;
+    public int maxRendererHorizonChunks = 128;
     public boolean enableDevCommands = true;
 
     public static LodestoneFarConfig load(Path gameDirectory) {

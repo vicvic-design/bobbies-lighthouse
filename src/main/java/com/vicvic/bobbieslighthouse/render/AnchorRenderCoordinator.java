@@ -9,6 +9,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,9 @@ public final class AnchorRenderCoordinator {
     private int failedLoads;
     private int staleManagedChunks;
     private int renderSectionsDirtied;
+    private int rendererHorizonChunks;
+    private int lastAppliedRendererHorizonChunks = -1;
+    private int visibleSectionsInjected;
 
     public AnchorRenderCoordinator(
             Minecraft client,
@@ -84,6 +88,22 @@ public final class AnchorRenderCoordinator {
 
     public int renderSectionsDirtiedCount() {
         return renderSectionsDirtied;
+    }
+
+    public int rendererHorizonChunks() {
+        return rendererHorizonChunks;
+    }
+
+    public int visibleSectionsInjectedCount() {
+        return visibleSectionsInjected;
+    }
+
+    public Set<Long> managedChunkSnapshot() {
+        return Collections.unmodifiableSet(new HashSet<>(managedChunks));
+    }
+
+    public void recordVisibleSectionsInjected(int count) {
+        visibleSectionsInjected += count;
     }
 
     public boolean isBobbyAvailable() {
@@ -161,7 +181,9 @@ public final class AnchorRenderCoordinator {
                 + ", loadedInBobby=" + loadedInBobby
                 + ", missingFromBobby=" + missingFromBobby
                 + ", staleManagedLastRefresh=" + staleManagedChunks
-                + ", renderSectionsDirtied=" + renderSectionsDirtied;
+                + ", renderSectionsDirtied=" + renderSectionsDirtied
+                + ", rendererHorizonChunks=" + rendererHorizonChunks
+                + ", visibleSectionsInjected=" + visibleSectionsInjected;
     }
 
     public void tick() {
@@ -174,6 +196,7 @@ public final class AnchorRenderCoordinator {
         }
         ticksUntilRefresh = Math.max(1, config.renderRefreshIntervalTicks);
         Set<Long> desired = computeDesiredChunks();
+        updateRendererHorizon(desired);
         unloadUndesired(desired);
         reconcileManagedChunks(desired);
         loadDesired(desired);
@@ -305,6 +328,25 @@ public final class AnchorRenderCoordinator {
         ChunkPos playerChunk = client.player.chunkPosition();
         int renderDistance = client.options.renderDistance().get();
         return Math.abs(x - playerChunk.x) <= renderDistance && Math.abs(z - playerChunk.z) <= renderDistance;
+    }
+
+    private void updateRendererHorizon(Set<Long> desired) {
+        if (client.player == null || client.levelRenderer == null) {
+            return;
+        }
+        ChunkPos playerChunk = client.player.chunkPosition();
+        int target = client.options.renderDistance().get();
+        for (long chunk : desired) {
+            int dx = Math.abs(ChunkPos.getX(chunk) - playerChunk.x);
+            int dz = Math.abs(ChunkPos.getZ(chunk) - playerChunk.z);
+            target = Math.max(target, Math.max(dx, dz) + 1);
+        }
+        target = Math.min(target, Math.max(client.options.renderDistance().get(), config.maxRendererHorizonChunks));
+        rendererHorizonChunks = target;
+        if (target != lastAppliedRendererHorizonChunks) {
+            lastAppliedRendererHorizonChunks = target;
+            client.levelRenderer.allChanged();
+        }
     }
 
     private void loadDesired(Set<Long> desired) {
