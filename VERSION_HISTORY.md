@@ -2,6 +2,16 @@
 
 This file tracks human-readable changes. Git tracks the exact file-level history for reverting.
 
+## 1.0.0 - Lighthouse Method Release - 2026-05-21
+
+- Promoted the working Lighthouse Method to the first stable release.
+- Returned to manual island chunk loading around lodestone anchors instead of filtering Bobby's whole render distance.
+- Kept the improved anchor locator/scanner flow.
+- Added Sodium visibility integration so manually loaded lighthouse chunks can render through gaps in Sodium's occlusion pass.
+- Retained vanilla visibility injection as a fallback path.
+- Removed pathway placeholder chunks and obsolete Bobby filter settings from the graphics options.
+- Kept the graphics settings focused on active lighthouse controls: enable, island radius, anchor distance, active anchors, chunk cap, load rate, render horizon, and shape.
+
 ## 0.1.0 - Prototype Baseline - 2026-05-19
 
 - Renamed project to BobbiesLightHouse.
