@@ -2,6 +2,20 @@
   "bobbieslighthouse.command.status": "Anchors: %s, active chunks: %s, Bobby: %s",
   "bobbieslighthouse.command.cleared": "Cleared %s lodestone anchors.",
   "bobbieslighthouse.command.refreshed": "Refresh requested.",
-  "option.bobbieslighthouse.bobby_filter_cutoff": "Bobby lighthouse cutoff",
-  "tooltip.option.bobbieslighthouse.bobby_filter_cutoff": "Past this distance from the player, Bobby is filtered down to chunks around known lodestone anchors."
+  "option.bobbieslighthouse.enabled": "BobbiesLightHouse",
+  "tooltip.option.bobbieslighthouse.enabled": "Enable manual distant island loading around known lodestone anchors.",
+  "option.bobbieslighthouse.anchor_radius": "Lodestone island radius",
+  "tooltip.option.bobbieslighthouse.anchor_radius": "Chunks around each lodestone anchor that should be manually loaded from Bobby.",
+  "option.bobbieslighthouse.max_anchor_distance": "Max anchor distance",
+  "tooltip.option.bobbieslighthouse.max_anchor_distance": "Farthest lodestone anchor distance, in chunks, considered for manual loading.",
+  "option.bobbieslighthouse.max_active_anchors": "Max active lodestones",
+  "tooltip.option.bobbieslighthouse.max_active_anchors": "Maximum number of nearby lodestone anchors rendered at once.",
+  "option.bobbieslighthouse.max_extra_chunks": "Max lighthouse chunks",
+  "tooltip.option.bobbieslighthouse.max_extra_chunks": "Maximum extra chunks this mod may keep manually loaded.",
+  "option.bobbieslighthouse.chunk_loads_per_tick": "Lighthouse chunk load rate",
+  "tooltip.option.bobbieslighthouse.chunk_loads_per_tick": "Maximum manual Bobby chunk loads started per client tick.",
+  "option.bobbieslighthouse.renderer_horizon": "Lighthouse render horizon",
+  "tooltip.option.bobbieslighthouse.renderer_horizon": "Maximum chunk horizon used to place far lighthouse render sections.",
+  "option.bobbieslighthouse.shape": "Lodestone island shape",
+  "tooltip.option.bobbieslighthouse.shape": "Shape used for chunks manually loaded around each lodestone anchor."
 }

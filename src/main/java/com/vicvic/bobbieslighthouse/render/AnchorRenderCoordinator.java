@@ -30,7 +30,6 @@ public final class AnchorRenderCoordinator {
     private int staleManagedChunks;
     private int renderSectionsDirtied;
     private int rendererHorizonChunks;
-    private int lastAppliedRendererHorizonChunks = -1;
     private int visibleSectionsInjected;
 
     public AnchorRenderCoordinator(
@@ -104,32 +103,6 @@ public final class AnchorRenderCoordinator {
 
     public void recordVisibleSectionsInjected(int count) {
         visibleSectionsInjected += count;
-    }
-
-    public int filteredBobbyViewDistance(int requestedViewDistance) {
-        if (!config.enabled || !config.onlyLoadLodestoneChunksBeyondBobbyCutoff) {
-            return requestedViewDistance;
-        }
-        return Math.min(requestedViewDistance, Math.max(2, config.bobbyFilterCutoffChunks));
-    }
-
-    public boolean isWithinBobbyFilterCutoff(int x, int z) {
-        if (client.player == null) {
-            return true;
-        }
-        ChunkPos playerChunk = client.player.chunkPosition();
-        int cutoff = Math.max(2, config.bobbyFilterCutoffChunks);
-        return Math.abs(x - playerChunk.x) <= cutoff && Math.abs(z - playerChunk.z) <= cutoff;
-    }
-
-    public boolean isAllowedFarBobbyChunk(int x, int z) {
-        if (!config.enabled || !config.onlyLoadLodestoneChunksBeyondBobbyCutoff) {
-            return true;
-        }
-        if (isWithinBobbyFilterCutoff(x, z)) {
-            return true;
-        }
-        return isWithinEnabledLodestoneRadius(x, z);
     }
 
     public boolean isBobbyAvailable() {
@@ -210,9 +183,7 @@ public final class AnchorRenderCoordinator {
                 + ", renderSectionsDirtied=" + renderSectionsDirtied
                 + ", rendererHorizonChunks=" + rendererHorizonChunks
                 + ", visibleSectionsInjected=" + visibleSectionsInjected
-                + ", bobbyFilterCutoffChunks=" + config.bobbyFilterCutoffChunks
-                + ", farLodestoneRadiusChunks=" + config.farLodestoneRadiusChunks
-                + ", farBobbyOnlyLodestoneChunks=" + config.onlyLoadLodestoneChunksBeyondBobbyCutoff;
+                + ", anchorRadiusChunks=" + config.anchorRadiusChunks;
     }
 
     public void tick() {
@@ -304,9 +275,6 @@ public final class AnchorRenderCoordinator {
                 if (playerDx <= currentRenderDistance && playerDz <= currentRenderDistance) {
                     continue;
                 }
-                if (!isAllowedFarCandidateChunk(anchor, x, z, playerDx, playerDz)) {
-                    continue;
-                }
                 if (bobbyBridge.isInNormalBobbyRange(x, z)) {
                     continue;
                 }
@@ -362,38 +330,6 @@ public final class AnchorRenderCoordinator {
         return Math.abs(x - playerChunk.x) <= renderDistance && Math.abs(z - playerChunk.z) <= renderDistance;
     }
 
-    private boolean isAllowedFarCandidateChunk(LodestoneAnchor anchor, int x, int z, int playerDx, int playerDz) {
-        if (!config.onlyLoadLodestoneChunksBeyondBobbyCutoff) {
-            return true;
-        }
-        int cutoff = Math.max(2, config.bobbyFilterCutoffChunks);
-        if (playerDx <= cutoff && playerDz <= cutoff) {
-            return true;
-        }
-        return isWithinAnchorRadius(anchor, x, z, Math.max(0, config.farLodestoneRadiusChunks));
-    }
-
-    private boolean isWithinEnabledLodestoneRadius(int x, int z) {
-        int radius = Math.max(0, config.farLodestoneRadiusChunks);
-        for (LodestoneAnchor anchor : anchorStore.all()) {
-            if (anchor.enabled
-                    && anchor.dimension.equals(anchorStore.dimensionKey())
-                    && isWithinAnchorRadius(anchor, x, z, radius)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isWithinAnchorRadius(LodestoneAnchor anchor, int x, int z, int radius) {
-        int dx = x - anchor.chunkX;
-        int dz = z - anchor.chunkZ;
-        if (Math.abs(dx) > radius || Math.abs(dz) > radius) {
-            return false;
-        }
-        return config.shape != LodestoneFarConfig.Shape.CIRCLE || dx * dx + dz * dz <= radius * radius;
-    }
-
     private void updateRendererHorizon(Set<Long> desired) {
         if (client.player == null || client.levelRenderer == null) {
             return;
@@ -407,10 +343,6 @@ public final class AnchorRenderCoordinator {
         }
         target = Math.min(target, Math.max(client.options.renderDistance().get(), config.maxRendererHorizonChunks));
         rendererHorizonChunks = target;
-        if (target != lastAppliedRendererHorizonChunks) {
-            lastAppliedRendererHorizonChunks = target;
-            client.levelRenderer.allChanged();
-        }
     }
 
     private void loadDesired(Set<Long> desired) {
