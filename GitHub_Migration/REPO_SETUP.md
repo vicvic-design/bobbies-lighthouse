@@ -22,6 +22,16 @@ rg -n "token|secret|password|apikey|api_key|credential|client_secret" .
 
 If large generated files are tracked, decide whether to keep history as-is for now or migrate future artifacts to GitHub Releases only.
 
+Current note: this repository already tracks historical jars and archives under `dist/` and `Release_Archives/`. Treat that as an explicit migration decision before pushing publicly.
+
+## GitHub Metadata Added
+
+- `.github/ISSUE_TEMPLATE/bug_report.md`
+- `.github/ISSUE_TEMPLATE/feature_request.md`
+- `.github/ISSUE_TEMPLATE/compatibility.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `GitHub_Migration/RELEASE_CHECKLIST.md`
+
 ## Remote Creation
 
 After Viktor confirms the owner and visibility:

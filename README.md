@@ -24,6 +24,12 @@ gradle build
 
 The jar will be in `build/libs/`.
 
+## Release Notes
+
+Release planning and GitHub migration notes live in `GitHub_Migration/`.
+
+Before publishing a jar, use `GitHub_Migration/RELEASE_CHECKLIST.md` and update `VERSION_HISTORY.md`.
+
 ## Prototype Behavior
 
 - Discovers vanilla lodestone blocks in real client chunks.
@@ -45,3 +51,7 @@ These are intentionally development-only and can be removed before release.
 ## Important Prototype Notes
 
 The Bobby integration uses reflection against Bobby internals. That is acceptable for a quick test, but the production version should either contribute a small public API to Bobby or vendor a carefully reviewed compatibility layer per Bobby version.
+
+## License
+
+No license has been selected yet. Until a license is added, treat this project as all rights reserved.
