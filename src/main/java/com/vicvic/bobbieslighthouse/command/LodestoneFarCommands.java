@@ -52,11 +52,12 @@ public final class LodestoneFarCommands {
                                             + ", render sections dirtied: " + renderCoordinator.renderSectionsDirtiedCount()
                                             + ", renderer horizon chunks: " + renderCoordinator.rendererHorizonChunks()
                                             + ", visible sections injected: " + renderCoordinator.visibleSectionsInjectedCount()
+                                            + ", surface sections skipped: " + renderCoordinator.surfaceSectionsSkippedCount()
                                             + ", Bobby bridge: " + (renderCoordinator.isBobbyAvailable() ? "ok" : "unavailable")
                                             + ", diagnostic: " + renderCoordinator.bobbyDiagnostics()
                                             + ", shape: " + config.shape
                                             + ", radius: " + config.anchorRadiusChunks
-                                            + ", max distance: " + config.maxAnchorDistanceChunks
+                                            + ", lighthouse range: " + config.lighthouseRangeChunks
                             ));
                             return 1;
                         }))
@@ -166,6 +167,7 @@ public final class LodestoneFarCommands {
         dump.put("renderSectionsDirtied", renderCoordinator.renderSectionsDirtiedCount());
         dump.put("rendererHorizonChunks", renderCoordinator.rendererHorizonChunks());
         dump.put("visibleSectionsInjected", renderCoordinator.visibleSectionsInjectedCount());
+        dump.put("surfaceSectionsSkipped", renderCoordinator.surfaceSectionsSkippedCount());
         dump.put("bobbyDiagnostic", renderCoordinator.bobbyDiagnostics());
         dump.put("bobbyProbe", renderCoordinator.bobbyProbe());
         dump.put("bobbyFakeChunks", renderCoordinator.bobbyFakeChunkCount());

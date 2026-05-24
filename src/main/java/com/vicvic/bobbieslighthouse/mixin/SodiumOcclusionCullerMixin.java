@@ -39,10 +39,15 @@ public abstract class SodiumOcclusionCullerMixin {
         }
 
         int injected = 0;
+        int skipped = 0;
         for (long chunk : coordinator.managedChunkSnapshot()) {
             int x = ChunkPos.getX(chunk);
             int z = ChunkPos.getZ(chunk);
             for (int y = client.level.getMinSectionY(); y < client.level.getMaxSectionY(); y++) {
+                if (!coordinator.shouldInjectLighthouseSection(x, y, z)) {
+                    skipped++;
+                    continue;
+                }
                 RenderSection section = sections.get(SectionPos.asLong(x, y, z));
                 if (section == null || !OcclusionCuller.isWithinFrustum(viewport, section)) {
                     continue;
@@ -61,6 +66,9 @@ public abstract class SodiumOcclusionCullerMixin {
         }
         if (injected > 0) {
             coordinator.recordVisibleSectionsInjected(injected);
+        }
+        if (skipped > 0) {
+            coordinator.recordSurfaceSectionsSkipped(skipped);
         }
     }
 }

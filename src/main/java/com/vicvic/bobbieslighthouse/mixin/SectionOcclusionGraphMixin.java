@@ -35,10 +35,15 @@ public abstract class SectionOcclusionGraphMixin {
             return;
         }
         int injected = 0;
+        int skipped = 0;
         for (long chunk : coordinator.managedChunkSnapshot()) {
             int x = ChunkPos.getX(chunk);
             int z = ChunkPos.getZ(chunk);
             for (int y = client.level.getMinSectionY(); y < client.level.getMaxSectionY(); y++) {
+                if (!coordinator.shouldInjectLighthouseSection(x, y, z)) {
+                    skipped++;
+                    continue;
+                }
                 SectionRenderDispatcher.RenderSection section =
                         ((ViewAreaAccessor) viewArea).bobbieslighthouse$getRenderSection(SectionPos.asLong(x, y, z));
                 if (section == null || visibleSections.contains(section)) {
@@ -50,6 +55,9 @@ public abstract class SectionOcclusionGraphMixin {
         }
         if (injected > 0) {
             coordinator.recordVisibleSectionsInjected(injected);
+        }
+        if (skipped > 0) {
+            coordinator.recordSurfaceSectionsSkipped(skipped);
         }
     }
 }
