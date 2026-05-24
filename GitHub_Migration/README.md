@@ -24,15 +24,15 @@ This folder tracks the work to bring the Bobbies Lighthouse mod repository onto 
 - [x] Create local GitHub migration planning folder.
 - [x] Add GitHub issue and pull request templates.
 - [x] Add release checklist.
-- [ ] Confirm target GitHub account or organization.
-- [ ] Confirm repository visibility: private first or public immediately.
-- [ ] Review `.gitignore` for local build output, Gradle caches, IDE files, and release archives.
-- [ ] Check history for secrets, local paths, or accidental binaries before pushing.
-- [ ] Decide whether `dist/` and `Release_Archives/` stay in Git, move to GitHub Releases, or move to shared-drive archives only.
-- [ ] Update `README.md` with install instructions, supported Minecraft/Fabric versions, and command usage.
+- [x] Confirm target GitHub account or organization: `Vicvic`.
+- [x] Confirm repository visibility: public.
+- [x] Review `.gitignore` for local build output, Gradle caches, IDE files, and release archives.
+- [x] Check working tree for secrets before pushing.
+- [x] Decide artifact handling: keep only latest convenience jar in `dist/`; publish release jars through GitHub Releases.
+- [x] Update `README.md` with install instructions, supported Minecraft/Fabric versions, and command usage.
 - [ ] Update `TESTING.md` with a concise manual test pass for release builds.
-- [ ] Add a license or explicitly leave the repo unlicensed.
-- [ ] Add issue templates for bugs and feature requests.
+- [x] Add a license: MIT.
+- [x] Add issue templates for bugs and feature requests.
 - [ ] Create the GitHub remote.
 - [ ] Push branches and tags.
 - [ ] Create an initial GitHub Release for the latest known good jar.
@@ -57,8 +57,4 @@ This folder tracks the work to bring the Bobbies Lighthouse mod repository onto 
 
 As of 2026-05-24, the local planning side is ready for a GitHub handoff. The remaining blockers are external decisions or actions:
 
-- GitHub owner/account.
-- Repo visibility.
-- License choice.
-- Whether to preserve tracked jar/archive history as-is.
 - Remote creation and push.

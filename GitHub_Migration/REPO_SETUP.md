@@ -22,7 +22,7 @@ rg -n "token|secret|password|apikey|api_key|credential|client_secret" .
 
 If large generated files are tracked, decide whether to keep history as-is for now or migrate future artifacts to GitHub Releases only.
 
-Current note: this repository already tracks historical jars and archives under `dist/` and `Release_Archives/`. Treat that as an explicit migration decision before pushing publicly.
+Current decision: old jars and release archives are kept on the shared drive but removed from Git tracking. The repository keeps only `dist/bobbies-lighthouse-1.0.1-lighthouse-rewrite.jar` as a convenience download; GitHub Releases should hold release artifacts going forward.
 
 ## GitHub Metadata Added
 
@@ -34,18 +34,25 @@ Current note: this repository already tracks historical jars and archives under 
 
 ## Remote Creation
 
-After Viktor confirms the owner and visibility:
+Owner: `Vicvic`
+Visibility: public
+
+After creating the GitHub repository:
 
 ```bash
-git remote add origin git@github.com:<owner>/bobbies-lighthouse.git
-git push -u origin lighthouse-0.1.10-sodium-anchor
-```
-
-If the branch should become `main`:
-
-```bash
+git remote add origin git@github.com:Vicvic/bobbies-lighthouse.git
 git branch -M main
 git push -u origin main
+git push origin --tags
+```
+
+Initial release upload:
+
+```bash
+gh release create v1.0.1 dist/bobbies-lighthouse-1.0.1-lighthouse-rewrite.jar \
+  --repo Vicvic/bobbies-lighthouse \
+  --title "Bobbies Lighthouse 1.0.1" \
+  --notes-file GitHub_Migration/RELEASE_NOTES_v1.0.1.md
 ```
 
 ## Suggested Repository Settings

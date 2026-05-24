@@ -1,6 +1,6 @@
-# BobbiesLightHouse Prototype
+# Bobbies Lighthouse
 
-Client-only Fabric prototype for Minecraft 1.21.10. It discovers lodestones the player actually sees in loaded real chunks, stores them beside Bobby's cache, and asks Bobby to load cached chunks around eligible anchors.
+Client-only Fabric mod for Minecraft 1.21.10. It discovers lodestones the player actually sees in loaded real chunks, stores them beside Bobby's cache, and asks Bobby to load cached chunks around eligible anchors.
 
 ## Requirements
 
@@ -9,6 +9,14 @@ Client-only Fabric prototype for Minecraft 1.21.10. It discovers lodestones the 
 - Fabric API for 1.21.10
 - Bobby installed and working
 - Java 21+
+
+## Install
+
+1. Download the latest jar from GitHub Releases.
+2. Put the jar in your Minecraft `mods` folder.
+3. Launch with Fabric, Fabric API, and Bobby installed.
+
+The latest known jar is also kept in this repository at `dist/bobbies-lighthouse-1.0.1-lighthouse-rewrite.jar` for convenience. Future release jars should be attached to GitHub Releases first.
 
 ## Build
 
@@ -48,10 +56,10 @@ These are intentionally development-only and can be removed before release.
 - `/bobbieslighthouse refresh`
 - `/bobbieslighthouse clear`
 
-## Important Prototype Notes
+## Important Notes
 
 The Bobby integration uses reflection against Bobby internals. That is acceptable for a quick test, but the production version should either contribute a small public API to Bobby or vendor a carefully reviewed compatibility layer per Bobby version.
 
 ## License
 
-No license has been selected yet. Until a license is added, treat this project as all rights reserved.
+MIT. See `LICENSE`.

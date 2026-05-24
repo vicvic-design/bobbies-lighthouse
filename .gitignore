@@ -4,3 +4,7 @@ run/
 *.iml
 .idea/
 .vscode/
+Release_Archives/
+dist/*
+!dist/
+!dist/bobbies-lighthouse-1.0.1-lighthouse-rewrite.jar
