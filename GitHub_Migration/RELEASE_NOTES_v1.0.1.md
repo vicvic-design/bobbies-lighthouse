@@ -10,6 +10,7 @@
 
 ## Notes
 
+- Developed with AI assistance; review before use and use at your own risk.
 - Latest known jar for the lighthouse rewrite.
 - Client-only Fabric mod.
 - Uses lodestone anchors to request Bobby cached chunks around discovered lighthouse points.

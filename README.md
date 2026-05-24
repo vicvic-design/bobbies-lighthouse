@@ -56,6 +56,10 @@ These are intentionally development-only and can be removed before release.
 - `/bobbieslighthouse refresh`
 - `/bobbieslighthouse clear`
 
+## AI Assistance and Risk Notice
+
+This project was developed with AI assistance. Review the code before using it, test it in a safe Minecraft profile first, and use it at your own risk.
+
 ## Important Notes
 
 The Bobby integration uses reflection against Bobby internals. That is acceptable for a quick test, but the production version should either contribute a small public API to Bobby or vendor a carefully reviewed compatibility layer per Bobby version.
